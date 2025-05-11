@@ -1,0 +1,59 @@
+{% extends "auctions/layout.html" %}
+{% load static %}
+
+{% block script %}
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        document.getElementById('image-input').addEventListener('change', function (e) {
+            const file = e.target.files[0]; // Получаем первый файл (если их несколько, можно изменить логику)
+
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    // Когда файл загружен, показываем превью
+                    const preview = document.getElementById('preview');
+                    preview.src = e.target.result;  // Устанавливаем src превью на загруженный файл
+                    preview.style.display = 'block'; // Показываем изображение
+                };
+
+                reader.readAsDataURL(file);  // Читаем файл как DataURL
+            }
+        });
+    });
+
+</script>
+{% endblock %}
+
+{% block body %}
+    <h2>Create Listing</h2>
+    <form id="upload-form" action="/upload" method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="create-item-div">
+            <h3>Upload Image: </h3>
+            <div class="input-group mb-3">
+                <input name="image" type="file" class="form-control" id="image-input" required>
+              </div>
+            <div id="image-preview">
+                <img id="preview" src="#" alt="Превью изображения" style="max-width: 300px; display: none;" />
+            </div>
+        </div>
+        <div class="create-item-div">
+            <h3>Title: </h3>
+            <input class="form-control" type="text" name="title" class="create-input" required />
+        </div>
+        <div class="create-item-div">
+            <h3>Description: </h3>
+            <input class="form-control" type="text" name="description" class="create-input" required />
+        </div>
+        <div class="create-item-div">
+            <h3>Price: </h3>
+            <input class="form-control" type="float" step="0.01" name="price" class="create-input" required />
+        </div>
+        <div class="create-item-div">
+            <h3>Category: </h3>
+            <input class="form-control" type="text" name="category" class="create-input" required />
+        </div>
+        <button id="upload-button" class="btn btn-primary" style="margin: 20px;" type="submit">Create item</button>
+    </form>
+{% endblock %}

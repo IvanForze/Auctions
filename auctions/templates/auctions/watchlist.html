@@ -1,0 +1,39 @@
+{% extends "auctions/layout.html" %}
+{% load static %}
+
+{% block body %}
+    <h2 style="margin-bottom: 20px">My Watchlist</h2>
+    <div class="listings-container">
+        {% for listing in listings %}
+        <a class="listing-link" href="/listings/{{ listing.id }}">
+            <div class="listing">
+                <img class="listing-picture" src="{{ listing.image.url }}" />
+                <div class="listing-text">
+                    <div class="listing-title">{{ listing.title }}</div>
+                    <div class="listing-price">
+                        <span style="font-weight: bold;">Price: </span>
+                        ${{ listing.price }}
+                    </div>
+                    <div class="listing-desr">{{ listing.description }}</div>
+                    <div class="listing-date">Created {{ listing.date }}</div>
+                    <form class="listing-watchlist-form" action="/add_watchlist/{{ listing.id }}" method="POST">
+                        {% csrf_token %}
+                        {% if request.user in listing.watchlist.all %}
+                            <button class="listing-watchlist-btn">
+                                <svg height="30px" width="30px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 455 455" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M0,0v455h455V0H0z M358.865,242.5h-263v-30h263V242.5z"></path> </g></svg>
+                                Remove from watchlist
+                            </button>
+                        {% else %}
+                            <button class="listing-watchlist-btn">
+                                <svg height="30px" width="30px" version="1.1" id="Layer_1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 455 455" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M0,0v455h455V0H0z M358.865,242.635h-116.5v116.499h-30V242.635h-116.5v-30h116.5V96.137h30v116.498h116.5V242.635z"></path> </g></svg>
+                                Add to watchlist
+                            </button>
+                        {% endif %}
+                    </form>
+                    </div>
+                </div>
+            </a>
+        {% endfor %}
+    </div>
+
+{% endblock %}

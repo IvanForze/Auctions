@@ -1,0 +1,95 @@
+{% extends "auctions/layout.html" %}
+{% load static %}
+
+{% block script %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var socket = new WebSocket(`ws://localhost:8000/ws/listing/{{ listing.id }}`);
+            
+            socket.onmessage = function(event) {
+                var data = JSON.parse(event.data);
+                console.log(data);
+                document.getElementById('price').innerText = "$" + data.price;
+
+                var messageDiv = document.getElementById('message-container');
+                if (data.message) {
+                    if (data.success) {
+                        messageDiv.innerHTML = '<div class="alert alert-success">' + data.message + '</div>';
+                    } else {
+                        messageDiv.innerHTML = '<div class="alert alert-danger">' + data.message + '</div>';
+                    }
+                }
+            };
+
+            let form = document.getElementById('price-form');
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                let price = e.target.bidprice.value;
+                console.log(price);
+                
+
+                socket.send(JSON.stringify({
+                    'price': price,
+                }));
+
+                form.reset();
+            });
+        });
+        
+        
+    </script>
+{% endblock %}
+
+{% block body %}
+    <div class="listing-page-container">        
+        <h2 class="listing-page-title">Listing: {{ listing.title }}</h2>
+        <form class="listing-watchlist-form" action="/add_watchlist/{{ listing.id }}" method="POST">
+            {% csrf_token %}
+            {% if request.user in listing.watchlist.all %}
+                <button class="listing-watchlist-btn">
+                    <svg height="30px" width="30px" version="1.1"  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 455 455" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M0,0v455h455V0H0z M358.865,242.5h-263v-30h263V242.5z"></path> </g></svg>
+                    Remove from watchlist
+                </button>
+            {% else %}
+                <button class="listing-watchlist-btn">
+                    <svg height="30px" width="30px" version="1.1"  xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 455 455" xml:space="preserve"><g id="SVGRepo_bgCarrier" stroke-width="0"></g><g id="SVGRepo_tracerCarrier" stroke-linecap="round" stroke-linejoin="round"></g><g id="SVGRepo_iconCarrier"> <path d="M0,0v455h455V0H0z M358.865,242.635h-116.5v116.499h-30V242.635h-116.5v-30h116.5V96.137h30v116.498h116.5V242.635z"></path> </g></svg>
+                    Add to watchlist
+                </button>
+            {% endif %}
+        </form>
+        <img class="listing-page-image" src="{{ listing.image.url }}" />
+        <div class="listing-page-desc">{{ listing.description }}</div>
+        <div class="listing-page-price" id="price">${{ listing.price }}</div>
+        <form id="price-form">
+            <input style="margin-bottom: 20px;" class="form-control" type="float" step="0.01" name="bidprice" required />
+            <div id="message-container">
+                <!-- Здесь будут отображаться сообщения -->
+            </div>
+            <button id="upload-button" class="btn btn-primary" style="margin-bottom: 20px;" type="submit">Bid</button>
+        </form>
+        <div>
+            <h2 class="listing-page-title">Details:</h2>
+            <ul>
+                <li>Listed by: {{ listing.owner.username }}</li>
+                <li>Category: {{ listing.category.categoryName }}</li>
+            </ul>
+        </div>
+        <div class="listing-page-comments">
+            <h2 class="listing-page-title">Comments:</h2>
+            <form action="/add_comment/{{ listing.id }}" method="POST">
+                {% csrf_token %}
+                <input type="hidden" name="listing" required value="{{ request.listing }}"/>
+                <input style="margin-bottom: 20px;" class="form-control" type="text" name="comment" required />
+                <button id="upload-button" class="btn btn-primary" style="margin-bottom: 20px;" type="submit">Add comment</button>
+            </form>
+            {% for comment in comments %}
+                <div class="comment">
+                    <div class="comment-author">{{ comment.user.username }}</div>
+                    <div class="comment-text">{{ comment.text }}</div>
+                    <div class="comment-date">{{ comment.date }}</div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}
